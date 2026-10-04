@@ -15,4 +15,4 @@ dependencyResolutionManagement {
 }
 
 rootProject.name = "MnemoLink"
-include(":app")
+include(":app", ":core")

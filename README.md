@@ -14,7 +14,7 @@ The first companion workflow is implemented: enter a concept/context, generate a
 
 **This is an offline development demo, not the complete MVP.** It makes no LLM calls, does not connect to AnkiDroid, and does not save notes. Approval is clearly labeled as local-only. Drafts survive activity recreation but are lost after process death; durable recovery comes later.
 
-The scaffold includes a pinned JDK 17 / Gradle 8.13 / Kotlin 2.2.21 toolchain, Compose UI, formatting, Android lint, 22 JVM tests, five device tests, dependency checksums, and CI checks. Device tests must be run on an emulator/phone; see the testing guide.
+The scaffold includes a pinned JDK 17 / Gradle 8.13 / Kotlin 2.2.21 toolchain, Compose UI, formatting, Android lint, shared JVM workflow tests, Android adapter tests, five device tests, dependency checksums, and CI checks. Device tests must be run on an emulator/phone; see the testing guide.
 
 ### Try the offline workflow
 
@@ -32,7 +32,7 @@ Configure your Android SDK using `ANDROID_HOME` or an untracked `local.propertie
 
 ```sh
 python3 tools/verify_wrapper.py
-./gradlew :app:ktlintCheck :app:testDebugUnitTest :app:lintDebug :app:assembleDebug :app:assembleDebugAndroidTest
+./gradlew :core:ktlintCheck :core:test :app:ktlintCheck :app:testDebugUnitTest :app:lintDebug :app:assembleDebug :app:assembleDebugAndroidTest
 ```
 
 See [build and test instructions](docs/testing.md) and [architecture](docs/architecture.md). The debug APK is `app/build/outputs/apk/debug/app-debug.apk`.

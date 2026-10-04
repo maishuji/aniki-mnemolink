@@ -15,7 +15,7 @@ Dependency/toolchain update notices are informational in lint so a newly publish
 
 ```sh
 python3 tools/verify_wrapper.py
-./gradlew :app:ktlintCheck :app:testDebugUnitTest :app:lintDebug :app:assembleDebug :app:assembleDebugAndroidTest
+./gradlew :core:ktlintCheck :core:test :app:ktlintCheck :app:testDebugUnitTest :app:lintDebug :app:assembleDebug :app:assembleDebugAndroidTest
 ```
 
 To apply formatting deliberately, use `./gradlew :app:ktlintFormat` and review the diff.
@@ -37,6 +37,6 @@ CI runs formatting, JVM tests, Android lint, debug assembly, and compilation of 
 
 ## Workflow coverage
 
-JVM tests cover validation, local approval, source-edit invalidation, cancellation, duplicate generation taps, noncooperative late responses, and failure recovery. Five Compose device tests cover generation/edit/approval, source invalidation, discard, unsafe-output rejection, and activity recreation. Compiling these tests is not evidence they passed on a device.
+The platform-independent `core` JVM tests cover validation, local approval, source-edit invalidation, cancellation, duplicate generation taps, noncooperative late responses, failure recovery, entry-mode preservation, and workflow disposal without canceling its caller scope. Android adapter tests verify the same behavior through `GenerationViewModel`. Five Compose device tests cover generation/edit/approval, source invalidation, discard, unsafe-output rejection, and activity recreation. Compiling these tests is not evidence they passed on a device.
 
 Current draft state is ViewModel-only: activity recreation retains it, process death does not. Encrypted durable recovery and the two-app contract are later increments.

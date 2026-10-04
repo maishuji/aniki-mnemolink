@@ -1,6 +1,6 @@
 # Architecture
 
-MnemoLink is an independent Android companion. Start with a single application module organized by feature and adapter; extract modules when a real boundary needs reuse or build isolation.
+MnemoLink is an independent companion for Anki. The shared `core` Kotlin/JVM module contains domain models, validation, deterministic generation, and the generation workflow; it has no Android dependencies. The Android `app` module owns its platform UI and lifecycle adapter. A Linux desktop target can consume the same core without duplicating approval/cancellation rules.
 
 ## Boundaries
 
@@ -10,7 +10,8 @@ MnemoLink is an independent Android companion. Start with a single application m
 - `MnemonicService` only returns a suggestion. It has no collection-writing capability.
 - Future Anki and provider adapters live behind small interfaces.
 - `AppContainer` supplies the deterministic service; `MainActivity` provides a ViewModel factory and collects state with lifecycle awareness.
-- `GenerationViewModel` invalidates a request before canceling its job, preventing a late noncooperative response from replacing newer state. Source edits revoke the draft/approval; draft edits revoke approval.
+- `GenerationWorkflow` in `core` invalidates a request before canceling its job, preventing a late noncooperative response from replacing newer state. Source edits revoke the draft/approval; draft edits revoke approval.
+- Android `GenerationViewModel` delegates to the workflow using `viewModelScope`. Each workflow owns a child job; closing it freezes its state and cancels only that job, not the caller's scope. Calls and the supplied dispatcher must stay on one UI thread.
 - Input/output lengths are bounded. Initial plain-text validation rejects field separators, Anki media/template markup, and HTML-like angle brackets. This is a restricted demo, not general HTML/cloze/formula support.
 
 There will be two explicit entry modes: standalone note selection/API save and reviewer-launched result-only generation. One request has one save owner. The return-only companion must never fall back to an API write.
