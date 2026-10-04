@@ -9,7 +9,7 @@ Desktop checks do not require an Android SDK:
 ./gradlew -PdesktopOnly=true :desktop:run --args=--smoke-test
 ```
 
-The second command requires a display, exercises application composition and local mock workflow, then exits. It uses software rendering, makes no AnkiConnect request, and is not an interactive/rendered-screen assertion. See [desktop instructions](desktop-linux.md) for AnkiConnect setup and standalone image/package checks.
+The second command requires a display, exercises application composition and the offline Demo workflow, then exits. Smoke always uses Demo regardless of the normal controller Qwen3 default. It uses software rendering, makes no Ollama or AnkiConnect requests, and is not an interactive/rendered-screen assertion. See [desktop instructions](desktop-linux.md) for AnkiConnect setup and standalone image/package checks.
 
 ### Read-only AnkiConnect coverage and manual verification
 
@@ -24,9 +24,44 @@ For later manual verification, use Anki Desktop with add-on `2055492159` at `htt
 - Dropdowns require existing, distinct concept/optional context/destination fields; missing destination blocks load without creating fields.
 - Plaintext preview leaves raw Anki values unchanged; invalid/unsupported input blocks load. Selection and mapping alone leave workflow input untouched.
 - Explicit load replaces concept/context; a draft or active generation requires confirmation. Cancel preserves state; confirmed replacement invalidates stale draft/approval/generation results.
-- Generation stays mock-only, approval stays local, and no cloud requests, note writes, schema changes, or scheduling changes occur.
+- Loading/selection does not generate or authorize an Ollama request. Offline Demo makes no server requests; Ollama sends only separately confirmed concept/context, not note metadata or destination content. Approval stays local; no note writes, schema changes, or scheduling changes occur.
 
-These are verification steps, not recorded passing results. Real-provider and guarded-save tests belong to future increments; read-only fixture coverage does not establish conflict-safe writes.
+These are verification steps, not recorded passing results. The passing opt-in live Ollama adapter test is separate from pending UI verification and guarded-save tests; read-only fixture coverage does not establish conflict-safe writes.
+
+### Local Ollama coverage and manual verification
+
+Adapter commit `9935282` adds `OllamaMnemonicServiceTest` using MockWebServer on ephemeral loopback ports and shared generation-failure tests. Fixture coverage comprises 14 adapter tests, 17 desktop controller tests, and 2 core safe-error tests. Fixtures cover minimal concept/context-only source data, French/untrusted-JSON prompt policy, no tools/credentials, request options, endpoint restrictions, redirects/proxy/retry behavior, bounded bodies/timeouts, malformed/model-mismatched/incomplete/truncated/invalid output, safe error categories, cancellation, and close cleanup. These are synthetic HTTP fixtures, not live model inference.
+
+`DesktopGenerationControllerTest` uses fake services and injected coroutine scopes for the Qwen3 default without requests, exact input dispatch to each backend, draft/approval invalidation on switching, same-backend preservation, cancellation/stale completions, old-service closure, controller disposal, and input/model-bound generation confirmation that rejects stale or duplicate requests. The UI uses this controller; the selector and confirmation dialogs are implemented, but controller tests do not prove rendered selector/dialog behavior. `:desktop:build` includes desktop JVM tests. Targeted headless commands are:
+
+```sh
+./gradlew -PdesktopOnly=true :desktop:test --tests 'dev.mnemolink.desktop.data.ollama.OllamaMnemonicServiceTest'
+./gradlew -PdesktopOnly=true :desktop:test --tests 'dev.mnemolink.desktop.DesktopGenerationControllerTest'
+```
+
+The separate opt-in `OllamaLocalIntegrationTest` **passed** using installed `qwen3:14b` with synthetic concept `ubiquitous` and context `Mot anglais : présent partout.` via the adapter's 60-second bounded request. It asserts shared draft validity, not factual quality or UI behavior. By default, a JUnit assumption skips this test unless `MNEMOLINK_OLLAMA_TEST=true`; no live Ollama request is made when skipped.
+
+To opt in deliberately against a trusted local Ollama service and already installed model:
+
+```sh
+MNEMOLINK_OLLAMA_TEST=true ./gradlew -PdesktopOnly=true :desktop:test --tests '*OllamaLocalIntegrationTest' --rerun-tasks
+```
+
+This command sends synthetic concept/context to the fixed local endpoint and uses local compute; it never downloads a model or starts a server. The full local regression run passed 162 JVM tests with zero failures; the opt-in live test was skipped in that default run and passed separately. Desktop/core build, Android formatting/lint, debug/test APK compilation, Linux image/`.deb` builds, and the bundled Demo smoke check passed. The package was not installed, and Android device tests were not run. No live Anki note read/write or rendered UI-click validation is claimed.
+
+Both `qwen3:14b` and `qwen2.5:14b` are already installed on the development machine; previous 100% GPU placement on an RTX 3080 Ti Laptop with 16 GB VRAM is a hardware observation, not an adapter test result. Check `ollama list` and `ollama ps` manually. If a model is absent, a user may explicitly run `ollama pull` as described in [Ollama setup](ollama.md), accepting network use and roughly 9 GB storage per model. Neither fixture tests, the opt-in live test, nor smoke pull models or start an unbounded `ollama serve` process.
+
+For the implemented UI, verify manually with synthetic input and a trusted, locally administered Ollama installation using local weights/inference, never cloud-backed aliases (loopback alone is not proof):
+
+- Qwen3 is the normal default; Qwen2.5 and offline Demo are selectable. Startup, selection, loading, approval, and smoke send no generation requests.
+- Each Ollama Generate/Regenerate opens a dialog showing the current concept/context and exact model; cancel/dismiss sends nothing. Confirm sends exactly those source values, with no stale input/model and no reuse of previous consent.
+- Switching backends requires confirmation only when a draft, approval, or in-flight generation exists. Cancel preserves backend/draft/approval; confirm clears draft/approval, cancels the prior request, closes the old client, preserves input, and rejects late results. With empty idle state, switching is immediate and sends no request. Selecting the same backend does not reset state.
+- Both supported local models can return a reviewable French mnemonic. Invented associations are clearly mnemonic fiction, not factual etymology; source instructions do not authorize tools. Human review is still required.
+- Missing/stopped server, missing model, 60-second timeout, malformed/truncated/oversized/invalid output, and cancellation produce safe errors or canceled state, not partial drafts or automatic retries/downloads.
+- Closing the window during generation cancels owned work and closes client resources; it does not stop the independently managed Ollama server. Requests use the fixed endpoint, 256 KiB cap, 2048-token context, 384-token output budget, `think: false`, and `keep_alive: 2m`.
+- Approval remains local, drafts remain in memory, and no note/schema/scheduling writes occur. Offline Demo and smoke work without either server.
+
+This checklist is pending manual verification, not recorded passing results.
 
 ## Android requirements
 

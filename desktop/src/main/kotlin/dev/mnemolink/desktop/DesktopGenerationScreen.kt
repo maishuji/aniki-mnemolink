@@ -43,7 +43,9 @@ fun DesktopGenerationScreen(
     onCancel: () -> Unit,
     darkTheme: Boolean,
     onDarkThemeChange: (Boolean) -> Unit,
-    noteBrowser: @Composable () -> Unit = {}
+    noteBrowser: @Composable () -> Unit = {},
+    backend: GenerationBackend = GenerationBackend.Demo,
+    generationSettings: @Composable () -> Unit = {}
 ) {
     val scrollState = rememberScrollState()
     val generating = state.status == GenerationStatus.Generating
@@ -79,17 +81,18 @@ fun DesktopGenerationScreen(
                         verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         Text(
-                            "Mock generation • read-only Anki access",
+                            "${backend.label} • read-only Anki access",
                             style = MaterialTheme.typography.titleMedium
                         )
                         Text(
-                            "This version uses mock suggestions, not an LLM. " +
-                                "You can explicitly read " +
-                                "local Anki notes, but nothing is saved. No cloud requests are made."
+                            "Generate locally with Ollama, or choose the offline mock demo. " +
+                                "No cloud provider or Anki saves are configured. " +
+                                "Review AI suggestions: they can be inaccurate."
                         )
                     }
                 }
                 noteBrowser()
+                generationSettings()
                 Text(
                     "Review your input",
                     style = MaterialTheme.typography.titleLarge,
@@ -134,9 +137,21 @@ fun DesktopGenerationScreen(
                 ) {
                     Text(
                         if (state.draft.isBlank()) {
-                            "Generate demo mnemonic"
+                            if (backend ==
+                                GenerationBackend.Demo
+                            ) {
+                                "Generate demo mnemonic"
+                            } else {
+                                "Generate local mnemonic"
+                            }
                         } else {
-                            "Regenerate demo mnemonic"
+                            if (backend ==
+                                GenerationBackend.Demo
+                            ) {
+                                "Regenerate demo mnemonic"
+                            } else {
+                                "Regenerate local mnemonic"
+                            }
                         }
                     )
                 }
@@ -179,7 +194,15 @@ fun DesktopGenerationScreen(
                     enabled = state.canApprove,
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    Text("Approve demo draft")
+                    Text(
+                        if (backend ==
+                            GenerationBackend.Demo
+                        ) {
+                            "Approve demo draft"
+                        } else {
+                            "Approve draft locally"
+                        }
+                    )
                 }
                 TextButton(
                     onClick = onCancel,
@@ -190,7 +213,7 @@ fun DesktopGenerationScreen(
                 }
                 Text(
                     "Drafts are in memory only and disappear when the window closes. " +
-                        "Do not use this demo to store important content.",
+                        "Copy important drafts elsewhere until durable recovery is implemented.",
                     style = MaterialTheme.typography.bodySmall
                 )
             }

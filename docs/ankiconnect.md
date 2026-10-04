@@ -43,18 +43,26 @@ HTML conversion is for the generation preview only. Original field strings remai
 
 Mappings and selection are in memory for this increment, not durable per-profile configuration. AnkiConnect's `notesInfo` response does not provide a robust collection-generation token or note GUID in the inspected protocol. This read path must not be advertised as a safe-write authorization mechanism.
 
+## Loading into local generation
+
+The desktop read-only UI provides plaintext preview and explicit loading into the shared workflow. Loading replaces concept/context; if a draft exists or generation is active, replacement requires confirmation and cancels/invalidates old draft/approval/work. Selection/mapping/preview alone do not change generation input.
+
+The local Ollama adapter is committed in `9935282`; UI integration through `DesktopGenerationController` is implemented, defaulting to `qwen3:14b` with `qwen2.5:14b` and offline Demo alternatives. Loading a note is **not consent to send it to Ollama**. Each Ollama Generate/Regenerate action shows confirmation of current concept/context and model; only those source values are sent, never note identity/schema, raw HTML, destination content, or the AnkiConnect key. Backend switching asks for confirmation only if a draft, approval, or in-flight generation exists; confirming clears draft/approval and cancels the previous request. With empty idle state, switching is immediate and sends no request. Approval is still local-only; no Anki write action has been added.
+
+Ollama uses the fixed `http://127.0.0.1:11434/api/chat` endpoint and requires trusted locally administered inference, not cloud-backed aliases. Loopback is not proof of local inference. There are no remote/custom endpoint controls, cloud credentials, automatic downloads, or retries. Smoke always uses offline Demo and contacts neither service. See [Ollama setup and limits](ollama.md).
+
 ## Testing and verification status
 
 Adapter tests use MockWebServer on ephemeral loopback ports and synthetic fixtures. Controller/mapping tests inject fake repositories and coroutine scopes. They cover authentication/errors, malformed/bounded responses, cancellation/resource cleanup, result limits, fresh identity/schema checks, stale completions, and raw HTML preservation/plaintext extraction.
 
-No AnkiConnect endpoint was reachable on the development machine during the initial version-only probe. No live collection content was read or written. Passing fixture tests is not a claim that the current installed Anki/add-on has been exercised end-to-end.
+No AnkiConnect endpoint was reachable on the development machine during the initial version-only probe. No live collection content was read or written, and no UI-click validation is claimed. The separate opt-in Ollama adapter test passed with installed `qwen3:14b` and synthetic `ubiquitous` input (60-second bounded request); it reads/writes no Anki notes and is skipped by default. See [test command](testing.md#local-ollama-coverage-and-manual-verification). No final packaging result is claimed. Passing fixture tests is not a claim that the current installed Anki/add-on has been exercised end-to-end.
 
 The protocol was checked against the [archived official FooSoft source](https://github.com/FooSoft/anki-connect/blob/master/plugin/__init__.py), including its web/config implementation. The repository points to [the current canonical SourceHut repository](https://git.sr.ht/~foosoft/anki-connect); access there was bot-blocked during this work. Verify installed-version behavior with a disposable collection before treating live compatibility as validated.
 
 ## Next slices
 
-1. Complete the read-only desktop UI and explicitly load selected plaintext into the maintained mock-generation workflow.
-2. Add one real LLM provider with explicit content-sharing and Linux-appropriate credential handling.
+1. Validate the existing read-only desktop UI and explicit plaintext loading against a disposable collection; no live collection or UI-click result is claimed.
+2. Validate the implemented desktop Ollama selector/per-request input/model confirmation, conditional backend-switch confirmation/cancellation, and service cleanup through actual UI clicks; the passing live adapter test does not validate this UI.
 3. Add a separate, guarded approved-write path: fresh identity/schema/input/destination checks, current overwrite confirmation, only the named destination field, read-back verification, and uncertain-outcome recovery. Investigate actual AnkiConnect concurrency/undo behavior rather than promising atomic conflict safety.
 
 Do not implement these writes by opening Anki's SQLite files or automatically creating note types/templates.

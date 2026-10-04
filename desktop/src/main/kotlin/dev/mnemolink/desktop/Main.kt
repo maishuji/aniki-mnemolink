@@ -1,5 +1,8 @@
 package dev.mnemolink.desktop
 
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -14,14 +17,13 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
 import androidx.compose.ui.window.rememberWindowState
-import dev.mnemolink.app.data.demo.DemoMnemonicService
 import dev.mnemolink.app.domain.GenerationInput
 import dev.mnemolink.app.domain.GenerationStatus
-import dev.mnemolink.app.workflow.GenerationWorkflow
 import dev.mnemolink.desktop.data.anki.AnkiConnectRepository
 import dev.mnemolink.desktop.feature.anki.AnkiBrowserController
 import kotlinx.coroutines.Dispatchers
@@ -44,31 +46,59 @@ fun main(args: Array<String>) {
             state = rememberWindowState(width = 620.dp, height = 860.dp)
         ) {
             val scope = rememberCoroutineScope { Dispatchers.Swing }
-            val workflow = remember { GenerationWorkflow(DemoMnemonicService(), scope) }
+            val generation = remember {
+                DesktopGenerationController(
+                    scope,
+                    if (options.smokeTest) GenerationBackend.Demo else GenerationBackend.Qwen3
+                )
+            }
+            val workflow = generation.workflow
+            val backend by generation.backend.collectAsState()
             val browser = remember {
                 AnkiBrowserController({ key -> AnkiConnectRepository(apiKey = key) }, scope)
             }
-            DisposableEffect(workflow, browser) {
+            DisposableEffect(generation, browser) {
                 onDispose {
                     browser.close()
-                    workflow.close()
+                    generation.close()
                 }
             }
             val state by workflow.state.collectAsState()
             val browserState by browser.state.collectAsState()
             var pendingInput by remember { mutableStateOf<GenerationInput?>(null) }
+            var pendingBackend by remember { mutableStateOf<GenerationBackend?>(null) }
+            var pendingGeneration by remember { mutableStateOf<GenerationRequest?>(null) }
             var darkTheme by remember { mutableStateOf(false) }
             MaterialTheme(colorScheme = if (darkTheme) darkColorScheme() else lightColorScheme()) {
                 DesktopGenerationScreen(
                     state = state,
                     onConceptChange = workflow::updateConcept,
                     onContextChange = workflow::updateContext,
-                    onGenerate = workflow::generate,
+                    onGenerate = {
+                        if (backend == GenerationBackend.Demo) {
+                            workflow.generate()
+                        } else {
+                            pendingGeneration = generation.prepareRequest()
+                        }
+                    },
                     onDraftChange = workflow::updateDraft,
                     onApprove = workflow::approve,
                     onCancel = workflow::cancel,
                     darkTheme = darkTheme,
                     onDarkThemeChange = { darkTheme = it },
+                    backend = backend,
+                    generationSettings = {
+                        GenerationSettingsPanel(backend) { selected ->
+                            if (state.draft.isNotEmpty() ||
+                                state.approval != null ||
+                                state.status == GenerationStatus.Generating
+                            ) {
+                                pendingBackend = selected
+                            } else {
+                                generation.selectBackend(selected)
+                            }
+                        }
+                    },
                     noteBrowser = {
                         AnkiBrowserPanel(browserState, browser) {
                             browser.mappedInput()?.let { input ->
@@ -84,6 +114,53 @@ fun main(args: Array<String>) {
                         }
                     }
                 )
+                pendingGeneration?.let { request ->
+                    val input = request.input
+                    AlertDialog(
+                        onDismissRequest = { pendingGeneration = null },
+                        title = { Text("Generate with ${request.backend.model}?") },
+                        text = {
+                            Text(
+                                "Send these fields to your local Ollama server only:\n\n" +
+                                    "Concept: ${input.concept}\nContext: ${input.context}\n\n" +
+                                    "No note IDs, tags or destination content are sent. " +
+                                    "Use a trusted local model, not a cloud-backed alias. " +
+                                    "The suggestion may be wrong; approval will not save to Anki.",
+                                modifier = Modifier.heightIn(max = 360.dp)
+                                    .verticalScroll(rememberScrollState())
+                            )
+                        },
+                        confirmButton = {
+                            TextButton(onClick = {
+                                generation.generateConfirmed(request)
+                                pendingGeneration = null
+                            }) { Text("Generate locally") }
+                        },
+                        dismissButton = {
+                            TextButton(onClick = { pendingGeneration = null }) { Text("Cancel") }
+                        }
+                    )
+                }
+                pendingBackend?.let { selected ->
+                    AlertDialog(
+                        onDismissRequest = { pendingBackend = null },
+                        title = { Text("Change generation service?") },
+                        text = {
+                            Text("This discards your draft and approval, and cancels generation.")
+                        },
+                        confirmButton = {
+                            TextButton(onClick = {
+                                generation.selectBackend(selected)
+                                pendingBackend = null
+                            }) { Text("Discard and change") }
+                        },
+                        dismissButton = {
+                            TextButton(onClick = {
+                                pendingBackend = null
+                            }) { Text("Keep current service") }
+                        }
+                    )
+                }
                 pendingInput?.let { input ->
                     AlertDialog(
                         onDismissRequest = { pendingInput = null },
