@@ -5,6 +5,7 @@ import dev.mnemolink.app.domain.GenerationInput
 import dev.mnemolink.app.domain.GenerationStatus
 import dev.mnemolink.app.domain.GenerationUiState
 import dev.mnemolink.app.domain.GenerationValidation
+import dev.mnemolink.app.domain.MnemonicGenerationException
 import dev.mnemolink.app.domain.MnemonicService
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
@@ -100,12 +101,14 @@ class GenerationWorkflow(
                     )
                 }
                 throw cancelled
-            } catch (_: Exception) {
+            } catch (failure: Exception) {
                 if (version == requestVersion) {
                     // Do not surface untrusted service exception text as UI content.
                     mutableState.value = state.value.copy(
                         status = GenerationStatus.Error,
-                        errorMessage = "Could not generate a mnemonic. Please try again."
+                        errorMessage =
+                        (failure as? MnemonicGenerationException)?.failure?.userMessage
+                            ?: "Could not generate a mnemonic. Please try again."
                     )
                 }
             }
