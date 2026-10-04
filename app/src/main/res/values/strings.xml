@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">MnemoLink for AnkiDroid</string>
+    <string name="foundation_title">MnemoLink</string>
+    <string name="foundation_description">Memory aids for your Anki notes. The companion workflow is under development.</string>
+</resources>

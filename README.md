@@ -10,7 +10,18 @@ The standalone companion will use stock AnkiDroid's public API to find and updat
 
 ## Current status
 
-Repository foundation only. Android scaffolding and the deterministic preview/edit/approval workflow are the first implementation increments. No LLM service, AnkiDroid integration, or note-writing functionality is implemented yet.
+Android companion scaffold with a pinned JDK 17 / Gradle 8.13 / Kotlin 2.2.21 toolchain, Compose UI, formatting, Android lint, JVM test support, dependency checksums, and CI checks. The deterministic preview/edit/approval workflow is the next increment. No LLM service, AnkiDroid integration, or note-writing functionality is implemented yet.
+
+## Build
+
+Configure your Android SDK using `ANDROID_HOME` or an untracked `local.properties`, then run:
+
+```sh
+python3 tools/verify_wrapper.py
+./gradlew :app:ktlintCheck :app:testDebugUnitTest :app:lintDebug :app:assembleDebug
+```
+
+See [build and test instructions](docs/testing.md) and [architecture](docs/architecture.md). The debug APK is `app/build/outputs/apk/debug/app-debug.apk`.
 
 Private planning files, SDK paths, keys, build output, and personal Anki collections are excluded from Git. Do not add real note content or provider credentials to tests or documentation.
 
