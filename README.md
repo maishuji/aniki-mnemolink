@@ -10,7 +10,21 @@ The standalone companion will use stock AnkiDroid's public API to find and updat
 
 ## Current status
 
-Android companion scaffold with a pinned JDK 17 / Gradle 8.13 / Kotlin 2.2.21 toolchain, Compose UI, formatting, Android lint, JVM test support, dependency checksums, and CI checks. The deterministic preview/edit/approval workflow is the next increment. No LLM service, AnkiDroid integration, or note-writing functionality is implemented yet.
+The first companion workflow is implemented: enter a concept/context, generate a deterministic mock mnemonic, edit it, approve locally, and discard it. Source edits invalidate old drafts/approval, and cancellation ignores stale responses.
+
+**This is an offline development demo, not the complete MVP.** It makes no LLM calls, does not connect to AnkiDroid, and does not save notes. Approval is clearly labeled as local-only. Drafts survive activity recreation but are lost after process death; durable recovery comes later.
+
+The scaffold includes a pinned JDK 17 / Gradle 8.13 / Kotlin 2.2.21 toolchain, Compose UI, formatting, Android lint, 22 JVM tests, five device tests, dependency checksums, and CI checks. Device tests must be run on an emulator/phone; see the testing guide.
+
+### Try the offline workflow
+
+1. Install the debug APK on Android 8 or newer.
+2. Review the synthetic example or enter plain-text concept/context.
+3. Tap **Generate demo mnemonic** and edit the draft.
+4. Tap **Approve demo draft**; the app confirms it was **not saved to AnkiDroid**.
+5. Change the input to invalidate the old draft, or tap **Discard draft**.
+
+Next increment: stock AnkiDroid availability/permission handling, real note search, and field mapping.
 
 ## Build
 
@@ -18,7 +32,7 @@ Configure your Android SDK using `ANDROID_HOME` or an untracked `local.propertie
 
 ```sh
 python3 tools/verify_wrapper.py
-./gradlew :app:ktlintCheck :app:testDebugUnitTest :app:lintDebug :app:assembleDebug
+./gradlew :app:ktlintCheck :app:testDebugUnitTest :app:lintDebug :app:assembleDebug :app:assembleDebugAndroidTest
 ```
 
 See [build and test instructions](docs/testing.md) and [architecture](docs/architecture.md). The debug APK is `app/build/outputs/apk/debug/app-debug.apk`.

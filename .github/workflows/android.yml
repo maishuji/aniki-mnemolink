@@ -22,4 +22,4 @@ jobs:
       - name: Validate wrapper JAR
         run: python3 tools/verify_wrapper.py
       - name: Formatting, unit tests, lint, and APK
-        run: ./gradlew --no-daemon :app:ktlintCheck :app:testDebugUnitTest :app:lintDebug :app:assembleDebug
+        run: ./gradlew --no-daemon :app:ktlintCheck :app:testDebugUnitTest :app:lintDebug :app:assembleDebug :app:assembleDebugAndroidTest

@@ -1,6 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">MnemoLink for AnkiDroid</string>
-    <string name="foundation_title">MnemoLink</string>
-    <string name="foundation_description">Memory aids for your Anki notes. The companion workflow is under development.</string>
+    <string name="screen_title">MnemoLink</string>
+    <string name="screen_subtitle">Build a memory aid for an Anki note.</string>
+    <string name="demo_title">Offline workflow demo</string>
+    <string name="demo_notice">This version uses a deterministic mock suggestion, not an LLM. It does not connect to AnkiDroid or save notes. No content leaves your device.</string>
+    <string name="input_heading">Review your input</string>
+    <string name="concept_label">Concept or word</string>
+    <string name="context_label">Context or definition (optional)</string>
+    <string name="text_limit">Characters: %1$d / %2$d</string>
+    <string name="input_edit_notice">Changing the concept or context discards the current draft and approval.</string>
+    <string name="generate_demo">Generate demo mnemonic</string>
+    <string name="regenerate_demo">Regenerate demo mnemonic</string>
+    <string name="generating">Generating a suggestion…</string>
+    <string name="draft_heading">Review and edit</string>
+    <string name="mnemonic_label">Mnemonic draft</string>
+    <string name="approve_demo">Approve demo draft</string>
+    <string name="local_approval_notice">Approved locally — not saved to AnkiDroid.</string>
+    <string name="cancel_generation">Cancel generation</string>
+    <string name="discard_draft">Discard draft</string>
+    <string name="persistence_notice">Drafts survive screen rotation but are not restored after process death in this increment. Do not use this demo to store important content.</string>
 </resources>
