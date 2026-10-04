@@ -15,4 +15,7 @@ dependencyResolutionManagement {
 }
 
 rootProject.name = "MnemoLink"
-include(":app", ":core")
+include(":core", ":desktop")
+if (providers.gradleProperty("desktopOnly").getOrElse("false") != "true") {
+    include(":app")
+}

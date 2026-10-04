@@ -1,6 +1,17 @@
 # Build and test
 
-## Requirements
+## Linux desktop
+
+Desktop checks do not require an Android SDK:
+
+```sh
+./gradlew -PdesktopOnly=true :core:ktlintCheck :core:test :desktop:build
+./gradlew -PdesktopOnly=true :desktop:run --args=--smoke-test
+```
+
+The second command requires a display, exercises application composition and local workflow, then exits. It uses software rendering and is not an interactive/rendered-screen assertion. See [desktop instructions](desktop-linux.md) for standalone image/package checks and remaining integration work.
+
+## Android requirements
 
 - JDK 17.
 - Android SDK platform 36 and build-tools 36.1.0; platform-tools for device use.
@@ -33,10 +44,10 @@ With an emulator or disposable test device connected:
 
 No paid LLM request or personal Anki collection belongs in automated tests. Future API integration tests must use synthetic disposable notes; real cross-app permission tests cannot be replaced by repository fakes.
 
-CI runs formatting, JVM tests, Android lint, debug assembly, and compilation of the instrumentation-test APK. It does not yet run a device/emulator or live-provider suite.
+The Android CI job runs formatting, shared/adapter JVM tests, Android lint, debug assembly, and compilation of the instrumentation-test APK. A separate desktop-only job runs headless core/launch-option tests, formatting/build, native image creation, and the bounded bundled-app smoke check under Xvfb. Neither job uses a live LLM, real Anki collection, or Android device/emulator.
 
 ## Workflow coverage
 
 The platform-independent `core` JVM tests cover validation, local approval, source-edit invalidation, cancellation, duplicate generation taps, noncooperative late responses, failure recovery, entry-mode preservation, and workflow disposal without canceling its caller scope. Android adapter tests verify the same behavior through `GenerationViewModel`. Five Compose device tests cover generation/edit/approval, source invalidation, discard, unsafe-output rejection, and activity recreation. Compiling these tests is not evidence they passed on a device.
 
-Current draft state is ViewModel-only: activity recreation retains it, process death does not. Encrypted durable recovery and the two-app contract are later increments.
+Current draft state is in-memory workflow state: Android activity recreation retains it; process death or desktop window closure does not. Encrypted durable recovery and the two-app contract are later increments.
