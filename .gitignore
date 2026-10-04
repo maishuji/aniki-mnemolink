@@ -1,0 +1,29 @@
+# Local planning and credentials
+.private/
+.env
+.env.*
+!.env.example
+*.jks
+*.keystore
+
+# Android/Gradle machine-local configuration and output
+.gradle/
+.gradle-user-home/
+.kotlin/
+**/build/
+local.properties
+captures/
+.externalNativeBuild/
+.cxx/
+
+# Editors
+.idea/
+*.iml
+.DS_Store
+
+# Personal collections must never enter source control
+*.apkg
+*.colpkg
+*.anki2
+*.anki21
+*.anki21b
