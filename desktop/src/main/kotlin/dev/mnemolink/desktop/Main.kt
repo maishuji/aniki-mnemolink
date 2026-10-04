@@ -1,6 +1,9 @@
 package dev.mnemolink.desktop
 
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.DisposableEffect
@@ -16,8 +19,11 @@ import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
 import androidx.compose.ui.window.rememberWindowState
 import dev.mnemolink.app.data.demo.DemoMnemonicService
+import dev.mnemolink.app.domain.GenerationInput
 import dev.mnemolink.app.domain.GenerationStatus
 import dev.mnemolink.app.workflow.GenerationWorkflow
+import dev.mnemolink.desktop.data.anki.AnkiConnectRepository
+import dev.mnemolink.desktop.feature.anki.AnkiBrowserController
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.swing.Swing
@@ -39,10 +45,18 @@ fun main(args: Array<String>) {
         ) {
             val scope = rememberCoroutineScope { Dispatchers.Swing }
             val workflow = remember { GenerationWorkflow(DemoMnemonicService(), scope) }
-            DisposableEffect(workflow) {
-                onDispose { workflow.close() }
+            val browser = remember {
+                AnkiBrowserController({ key -> AnkiConnectRepository(apiKey = key) }, scope)
+            }
+            DisposableEffect(workflow, browser) {
+                onDispose {
+                    browser.close()
+                    workflow.close()
+                }
             }
             val state by workflow.state.collectAsState()
+            val browserState by browser.state.collectAsState()
+            var pendingInput by remember { mutableStateOf<GenerationInput?>(null) }
             var darkTheme by remember { mutableStateOf(false) }
             MaterialTheme(colorScheme = if (darkTheme) darkColorScheme() else lightColorScheme()) {
                 DesktopGenerationScreen(
@@ -54,8 +68,44 @@ fun main(args: Array<String>) {
                     onApprove = workflow::approve,
                     onCancel = workflow::cancel,
                     darkTheme = darkTheme,
-                    onDarkThemeChange = { darkTheme = it }
+                    onDarkThemeChange = { darkTheme = it },
+                    noteBrowser = {
+                        AnkiBrowserPanel(browserState, browser) {
+                            browser.mappedInput()?.let { input ->
+                                if (state.draft.isNotEmpty() ||
+                                    state.approval != null ||
+                                    state.status == GenerationStatus.Generating
+                                ) {
+                                    pendingInput = input
+                                } else {
+                                    workflow.loadNoteInput(input)
+                                }
+                            }
+                        }
+                    }
                 )
+                pendingInput?.let { input ->
+                    AlertDialog(
+                        onDismissRequest = { pendingInput = null },
+                        title = { Text("Replace current input?") },
+                        text = {
+                            Text(
+                                "This discards the draft and local approval, and cancels generation."
+                            )
+                        },
+                        confirmButton = {
+                            TextButton(onClick = {
+                                workflow.loadNoteInput(input)
+                                pendingInput = null
+                            }) { Text("Discard and load") }
+                        },
+                        dismissButton = {
+                            TextButton(onClick = {
+                                pendingInput = null
+                            }) { Text("Keep current draft") }
+                        }
+                    )
+                }
             }
             if (options.smokeTest) {
                 LaunchedEffect(workflow) {

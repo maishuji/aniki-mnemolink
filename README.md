@@ -4,15 +4,15 @@ An Android and Linux desktop companion that will generate AI-assisted mnemonics,
 
 ## Delivery approach
 
-Implementation starts with the companion application. LLM configuration, credentials, prompting, and draft editing stay outside AnkiDroid. A later thin AnkiDroid integration will provide a native reviewer action and own the final save for that entry point.
+Implementation is desktop-first, starting with read-only AnkiConnect access in the Linux companion. Provider configuration, credentials, prompting, and draft editing stay in the companion. Android retains the offline demo; a later thin AnkiDroid integration will provide a native reviewer action and own the final save for that entry point.
 
-Android note access will use stock AnkiDroid's public API. Linux desktop note access needs a separate adapter, likely AnkiConnect with Anki Desktop running. Neither integration is implemented yet. Both must require an existing dedicated destination field, preserve unrelated note content, and never save generated output without explicit approval.
+Linux desktop has a read-only AnkiConnect backend (commit `e7e6e75`), with a desktop UI for explicit connection, search, note selection, and field mapping. Android note access will use stock AnkiDroid's public API but is not implemented yet. Future saves must require an existing dedicated destination field, preserve unrelated note content, and never save generated output without explicit approval.
 
 ## Current status
 
 The first companion workflow is implemented: enter a concept/context, generate a deterministic mock mnemonic, edit it, approve locally, and discard it. Source edits invalidate old drafts/approval, and cancellation ignores stale responses.
 
-**This is an offline development demo on Android and Linux, not the complete MVP.** It makes no LLM calls, does not connect to Anki/AnkiDroid, and does not save notes. Approval is clearly labeled as local-only. Drafts are in memory: Android retains them across activity recreation, but process death or closing the desktop window loses them. Durable recovery comes later.
+**This is a development increment, not the complete MVP.** Desktop note access is read-only and local; Android remains offline with no AnkiDroid connection. Generation is deterministic mock generation only: no cloud/provider calls and no note writes on either platform. Approval is local-only. Drafts are in memory: Android retains them across activity recreation, but process death or closing the desktop window loses them. Durable recovery comes later.
 
 The scaffold includes a pinned JDK 17 / Gradle 8.13 / Kotlin 2.2.21 toolchain, Compose UI, formatting, Android lint, shared JVM workflow tests, Android adapter tests, five device tests, dependency checksums, and CI checks. Device tests must be run on an emulator/phone; see the testing guide.
 
@@ -24,7 +24,13 @@ The scaffold includes a pinned JDK 17 / Gradle 8.13 / Kotlin 2.2.21 toolchain, C
 4. Tap **Approve demo draft**; the app confirms it was **not saved to AnkiDroid**.
 5. Change the input to invalidate the old draft, or tap **Discard draft**.
 
-Next integration increments: real provider configuration and platform-specific note access/search/field mapping.
+### Desktop read-only Anki flow
+
+Install AnkiConnect (add-on code `2055492159`) in Anki Desktop and keep Anki running at the local endpoint `http://127.0.0.1:8765/`. See [desktop setup](docs/desktop-linux.md#read-only-ankiconnect-setup-and-flow).
+
+The desktop UI uses an optional masked, session-only AnkiConnect key and explicit **Connect** and **Search** actions; it does not contact Anki at startup. Search initially uses `tag:MnemoLinkDemo`, fetches at most the first 20 matching note bodies, and shows the total match count. Selecting a note rereads it. Field dropdowns map an existing concept field, optional context field, and required destination field, all distinct. A plaintext preview precedes explicit loading into the workflow; loading replaces concept/context and requires confirmation if a draft exists or generation is running. Selection/preview alone does not replace input or generate anything.
+
+Next increments: one real provider with explicit content-sharing consent, then separately guarded approved saves. Live Anki integration and UI-click behavior have not been validated.
 
 ## Run on Linux
 

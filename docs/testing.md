@@ -9,7 +9,24 @@ Desktop checks do not require an Android SDK:
 ./gradlew -PdesktopOnly=true :desktop:run --args=--smoke-test
 ```
 
-The second command requires a display, exercises application composition and local workflow, then exits. It uses software rendering and is not an interactive/rendered-screen assertion. See [desktop instructions](desktop-linux.md) for standalone image/package checks and remaining integration work.
+The second command requires a display, exercises application composition and local mock workflow, then exits. It uses software rendering, makes no AnkiConnect request, and is not an interactive/rendered-screen assertion. See [desktop instructions](desktop-linux.md) for AnkiConnect setup and standalone image/package checks.
+
+### Read-only AnkiConnect coverage and manual verification
+
+Backend commit `e7e6e75` adds JVM adapter tests using MockWebServer on ephemeral loopback ports, plus controller/mapping tests using fake repositories and injected coroutine scopes. `:desktop:build` includes the desktop JVM tests. Coverage includes optional-key authentication/errors, malformed and bounded responses, cancellation/resource cleanup, the 20-note body limit, fresh note identity/schema checks, stale completions, field mapping, and raw HTML preservation/plaintext extraction. These fixtures are not a live Anki integration test.
+
+The desktop UI is wired to this backend. Two additional JVM tests verify that loading identical input clears draft/approval and that loading cancels pending generation. **No live collection end-to-end validation or UI-click test result is claimed.** The existing smoke check does not validate connecting, searching, dropdowns, preview, or replacement confirmation. The initial backend version-only probe found no reachable AnkiConnect endpoint; it read or wrote no collection content.
+
+For later manual verification, use Anki Desktop with add-on `2055492159` at `http://127.0.0.1:8765/` and a disposable collection containing synthetic `MnemoLinkDemo`-tagged notes. Check:
+
+- No startup request; optional masked key is session-only; explicit Connect and Search handle missing/unauthorized AnkiConnect safely.
+- Initial query `tag:MnemoLinkDemo`, full match count, at most the first 20 note bodies, and a fresh reread on selection (including changed/deleted notes).
+- Dropdowns require existing, distinct concept/optional context/destination fields; missing destination blocks load without creating fields.
+- Plaintext preview leaves raw Anki values unchanged; invalid/unsupported input blocks load. Selection and mapping alone leave workflow input untouched.
+- Explicit load replaces concept/context; a draft or active generation requires confirmation. Cancel preserves state; confirmed replacement invalidates stale draft/approval/generation results.
+- Generation stays mock-only, approval stays local, and no cloud requests, note writes, schema changes, or scheduling changes occur.
+
+These are verification steps, not recorded passing results. Real-provider and guarded-save tests belong to future increments; read-only fixture coverage does not establish conflict-safe writes.
 
 ## Android requirements
 

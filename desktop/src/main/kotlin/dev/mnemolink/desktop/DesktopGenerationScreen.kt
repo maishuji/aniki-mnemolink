@@ -42,7 +42,8 @@ fun DesktopGenerationScreen(
     onApprove: () -> Unit,
     onCancel: () -> Unit,
     darkTheme: Boolean,
-    onDarkThemeChange: (Boolean) -> Unit
+    onDarkThemeChange: (Boolean) -> Unit,
+    noteBrowser: @Composable () -> Unit = {}
 ) {
     val scrollState = rememberScrollState()
     val generating = state.status == GenerationStatus.Generating
@@ -77,13 +78,18 @@ fun DesktopGenerationScreen(
                         modifier = Modifier.padding(16.dp),
                         verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        Text("Offline workflow demo", style = MaterialTheme.typography.titleMedium)
                         Text(
-                            "This version uses mock suggestions, not an LLM. It does not connect " +
-                                "to Anki or save notes. No content leaves your device."
+                            "Mock generation • read-only Anki access",
+                            style = MaterialTheme.typography.titleMedium
+                        )
+                        Text(
+                            "This version uses mock suggestions, not an LLM. " +
+                                "You can explicitly read " +
+                                "local Anki notes, but nothing is saved. No cloud requests are made."
                         )
                     }
                 }
+                noteBrowser()
                 Text(
                     "Review your input",
                     style = MaterialTheme.typography.titleLarge,
