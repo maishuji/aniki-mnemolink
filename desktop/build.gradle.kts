@@ -20,7 +20,12 @@ dependencies {
     implementation(compose.desktop.currentOs)
     implementation(libs.compose.desktop.material3)
     implementation(libs.kotlinx.coroutines.swing)
+    implementation(libs.okhttp)
+    implementation(libs.kotlinx.serialization.json)
+    implementation(libs.jsoup)
     testImplementation(libs.junit)
+    testImplementation(libs.kotlinx.coroutines.test)
+    testImplementation(libs.okhttp.mockwebserver)
 }
 
 compose.desktop {
