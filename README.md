@@ -38,6 +38,10 @@ See [Ollama setup, limits, and privacy](docs/ollama.md), including manual `ollam
 
 Next increments: validate the implemented desktop selector/confirmation UI through actual clicks, complete packaging checks, then add separately guarded approved saves.
 
+## Planned Japanese vocabulary support
+
+The [Japanese mnemonics and learner profiles plan](docs/japanese-mnemonics-plan.md) records local French/English experiments, their quality limitations, and a staged design for explicit Japanese readings/meanings, learner profiles, mnemonic presets, and model selection. This is a proposal, not an implemented language/profile feature.
+
 ## Development shortcuts
 
 Run `make` or `make help` from the repository root to list available targets.
