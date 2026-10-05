@@ -2,7 +2,9 @@
 
 ## Linux desktop
 
-Desktop checks do not require an Android SDK:
+Desktop checks do not require an Android SDK. From the repository root, `make test` runs core/desktop JVM tests, `make check` runs their formatting/build/test checks, and `make smoke` builds the standalone image then runs its offline Demo smoke mode with a 30-second launcher timeout. Smoke requires a graphical display; the image build happens before the launcher timeout starts. Normal Makefile test/build/check targets set `MNEMOLINK_OLLAMA_TEST=false`; only `make test-ollama` opts into live synthetic Qwen3 generation. Use `make help` for all targets, including `make android-check` for SDK-dependent Android validation.
+
+Equivalent direct desktop commands:
 
 ```sh
 ./gradlew -PdesktopOnly=true :core:ktlintCheck :core:test :desktop:build
@@ -41,7 +43,7 @@ Adapter commit `9935282` adds `OllamaMnemonicServiceTest` using MockWebServer on
 
 The separate opt-in `OllamaLocalIntegrationTest` **passed** using installed `qwen3:14b` with synthetic concept `ubiquitous` and context `Mot anglais : présent partout.` via the adapter's 60-second bounded request. It asserts shared draft validity, not factual quality or UI behavior. By default, a JUnit assumption skips this test unless `MNEMOLINK_OLLAMA_TEST=true`; no live Ollama request is made when skipped.
 
-To opt in deliberately against a trusted local Ollama service and already installed model:
+To opt in deliberately against a trusted local Ollama service and already installed model, run `make test-ollama` or the equivalent direct command:
 
 ```sh
 MNEMOLINK_OLLAMA_TEST=true ./gradlew -PdesktopOnly=true :desktop:test --tests '*OllamaLocalIntegrationTest' --rerun-tasks

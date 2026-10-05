@@ -38,6 +38,27 @@ See [Ollama setup, limits, and privacy](docs/ollama.md), including manual `ollam
 
 Next increments: validate the implemented desktop selector/confirmation UI through actual clicks, complete packaging checks, then add separately guarded approved saves.
 
+## Development shortcuts
+
+Run `make` or `make help` from the repository root to list available targets.
+
+| Command | Purpose |
+| --- | --- |
+| `make run` | Launch the desktop app from source |
+| `make test` | Run headless core and desktop JVM tests |
+| `make check` | Check formatting and build/test core and desktop |
+| `make format` | Format core and desktop Kotlin sources |
+| `make image` / `make run-packaged` | Build / build and launch the bundled-Java application |
+| `make smoke` | Build the image and run the offline Demo smoke check |
+| `make package` | Build the `.deb` package; does not install it |
+| `make test-ollama` | Explicitly run the live local Qwen3 test using synthetic input |
+| `make android-check` | Run core and Android checks; requires an Android SDK |
+| `make clean` | Remove core/desktop build outputs, not model files or caches |
+
+Desktop targets require no Android SDK. Running the app or smoke check requires a graphical display; packaging also requires `dpkg-deb` and `fakeroot`. Normal test/build/check targets disable the live Ollama test, even if its opt-in environment variable was previously set. `make test-ollama` requires an already running trusted local Ollama server and installed `qwen3:14b`; it never downloads a model.
+
+The Makefile uses `.gradle-user-home/` for the Gradle cache by default. Override it via the environment or `make GRADLE_USER_HOME=/your/cache/path test`; `GRADLE` and `GRADLE_FLAGS` are also configurable. Targets are serialized, including with `make -j`, to prevent formatting from racing with checks.
+
 ## Run on Linux
 
 With JDK 17 and a graphical Linux session:
