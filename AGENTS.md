@@ -1,5 +1,14 @@
 # Repository instructions for agents
 
+## Project-local skills
+
+- Reusable skills are installed in `.agents/skills/`; use them when their stated scope matches the task.
+- Use `git-workflow` for focused change/commit planning and `documentation` for documentation work. Installing or loading a skill does not authorize commits, pushes, or branch operations beyond the repository instructions below.
+- Use `mnemonic-evaluator` to review vocabulary/phrase mnemonics against explicit learner objectives. Its verdict is heuristic unless learner recall evidence is supplied; it must not automatically approve or save Anki notes.
+- Do not apply Rust, ASUS hardware, or Dreamcast/KOS skills to unrelated Kotlin/Compose work.
+- `portable-agent-kit/skills/` is the canonical source. Do not maintain installed copies independently; see [skill usage and updates](docs/agent-skills.md).
+- Follow the repository rules below when a reusable workflow is less restrictive.
+
 ## Git identity and commit attribution
 
 - Every commit must use the repository-local Git identity configured by the owner (`git config --local user.name` and `git config --local user.email`) for both author and committer.
