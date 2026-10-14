@@ -1,5 +1,6 @@
 package dev.mnemolink.app
 
+import dev.mnemolink.app.data.demo.DemoMnemonicService
 import dev.mnemolink.app.domain.EntryMode
 import dev.mnemolink.app.domain.GenerationInput
 import dev.mnemolink.app.domain.GenerationStatus
@@ -31,12 +32,53 @@ class GenerationWorkflowTest {
         TestScope(StandardTestDispatcher()).runTest { block() }
 
     @Test
+    fun initialStateUsesKnownJapaneseComponentAndSuppliedReadingObjectives() = workflowTest {
+        GenerationWorkflow(MnemonicService { "Unused" }, this).use { workflow ->
+            val state = workflow.state.value
+            assertEquals("木", state.input.concept)
+            assertTrue(state.input.context.contains("Lecture fournie : き"))
+            assertTrue(state.input.context.contains("Sens : arbre"))
+            assertTrue(state.input.context.contains("reconnaître le sens"))
+            assertTrue(state.input.context.contains("Composant déjà connu : 木 = arbre"))
+            assertTrue(state.input.context.contains("retrouver la lecture fournie き"))
+            assertTrue(state.input.context.contains("français"))
+            assertEquals(EntryMode.Standalone, state.input.entryMode)
+            assertEquals(GenerationStatus.Ready, state.status)
+            assertEquals("", state.draft)
+            assertNull(state.approval)
+        }
+    }
+
+    @Test
+    fun japaneseDemoLinksKnownComponentAndMeaningToAnApproximateSoundCue() = workflowTest {
+        GenerationWorkflow(DemoMnemonicService(), this).use { workflow ->
+            workflow.generate()
+            advanceUntilIdle()
+
+            val state = workflow.state.value
+            assertEquals(GenerationStatus.Editing, state.status)
+            assertTrue(state.draft.startsWith("Démo mnémotechnique (image fictive) :"))
+            assertTrue(state.draft.contains("木"))
+            assertTrue(state.draft.contains("clé déjà connue"))
+            assertFalse(state.draft.contains("tronc"))
+            assertTrue(state.draft.contains("QUI m'a planté"))
+            assertTrue(state.draft.contains("approximatif"))
+            assertTrue(state.draft.contains("arbre"))
+            assertTrue(state.draft.contains("pas une étymologie"))
+            assertTrue(state.draft.contains("lecture fournie き"))
+            assertTrue(state.draft.contains("pas une règle de prononciation"))
+            assertNull(GenerationValidation.draftError(state.draft))
+            assertNull(state.approval)
+        }
+    }
+
+    @Test
     fun successAndApprovalCaptureExactInputAndEditedText() = workflowTest {
         var calls = 0
         GenerationWorkflow(
             MnemonicService { input ->
                 calls++
-                assertEquals("ubiquitous", input.concept)
+                assertEquals("木", input.concept)
                 "An imaginary story"
             },
             this

@@ -1,6 +1,7 @@
 package dev.mnemolink.desktop.data.ollama
 
 import dev.mnemolink.app.domain.EntryMode
+import dev.mnemolink.app.domain.GenerationExamples
 import dev.mnemolink.app.domain.GenerationInput
 import java.net.InetAddress
 import java.net.Proxy
@@ -143,6 +144,45 @@ class OllamaMnemonicServiceTest {
         )
         assertFalse(service.toString().contains("qwen"))
         assertFalse(payload.toString().contains("ReturnToHost"))
+    }
+
+    @Test fun characterPromptLinksKnownComponentsLayoutMeaningAndReading() = runBlocking {
+        val example = GenerationExamples.japaneseCharacter
+        for (model in listOf("qwen3:14b", "qwen2.5:14b")) {
+            enqueue(envelope(model = model))
+            service(model = model).generate(example)
+            val request = server.takeRequest(2, TimeUnit.SECONDS)!!
+            val payload = Json.parseToJsonElement(request.body.readUtf8()).jsonObject
+            val messages = payload["messages"] as JsonArray
+            val prompt = messages[0].jsonObject["content"]!!.jsonPrimitive.content
+            listOf(
+                "composants/clés déjà connus",
+                "gauche/droite, haut/bas, intérieur/extérieur",
+                "radical d'indexation",
+                "sans inventer de décomposition",
+                "caractère est lui-même une clé",
+                "lecture fournie",
+                "indice sonore",
+                "anglais seulement si l'apprenant le connaît",
+                "approximations",
+                "ne permet pas de déduire sa lecture",
+                "variété parlée",
+                "ne bloque pas un objectif limité au sens",
+                "n'invente ni lecture ni ton"
+            ).forEach { requirement ->
+                assertTrue("Missing character policy: $requirement", prompt.contains(requirement))
+            }
+            val data = Json.parseToJsonElement(
+                messages[1].jsonObject["content"]!!.jsonPrimitive.content
+            ).jsonObject
+            assertEquals(
+                buildJsonObject {
+                    put("concept", example.concept)
+                    put("context", example.context)
+                },
+                data
+            )
+        }
     }
 
     @Test fun sharedInputValidationPreventsEveryRequest() {

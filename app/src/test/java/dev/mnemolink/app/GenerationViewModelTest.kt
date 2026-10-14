@@ -31,7 +31,9 @@ class GenerationViewModelTest {
         val viewModel = GenerationViewModel(MnemonicService { "A story" })
 
         assertEquals(GenerationStatus.Ready, viewModel.state.value.status)
-        assertEquals("ubiquitous", viewModel.state.value.input.concept)
+        assertEquals("木", viewModel.state.value.input.concept)
+        assertTrue(viewModel.state.value.input.context.contains("Lecture fournie : き"))
+        assertTrue(viewModel.state.value.input.context.contains("Sens : arbre"))
         assertTrue(viewModel.state.value.input.context.contains("Synthetic demo"))
         assertEquals(EntryMode.Standalone, viewModel.state.value.input.entryMode)
         assertTrue(viewModel.state.value.canGenerate)
@@ -42,7 +44,7 @@ class GenerationViewModelTest {
     fun successProducesEditableDraftAndApprovalCapturesExactInputAndText() = runTest {
         val viewModel = GenerationViewModel(
             MnemonicService { input ->
-                assertEquals("ubiquitous", input.concept)
+                assertEquals("木", input.concept)
                 "An imaginary story"
             }
         )

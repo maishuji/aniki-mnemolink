@@ -226,7 +226,26 @@ class OllamaMnemonicService(
         val PROMPT = """
             Produis uniquement un moyen mnémotechnique bref en français, en texte brut,
             sans balises, pour le concept et le contexte fournis. Une à trois phrases,
-            sans préambule ni raisonnement.
+            sans préambule ni raisonnement interne ; rends le lien de rappel explicite.
+            Pour les hanzi/kanji, pars des composants/clés déjà connus de l'apprenant,
+            sauf profil contraire fourni : ne réenseigne pas les formes trait par trait.
+            Distingue radical d'indexation et composant graphique ; ce ne sont pas des synonymes.
+            Utilise la décomposition fournie, sans inventer de décomposition : relie la disposition
+            gauche/droite, haut/bas, intérieur/extérieur au sens dans une scène facile à retrouver.
+            Si les composants ou leur disposition manquent ou sont douteux, indique cette limite.
+            Si le caractère est lui-même une clé connue, rappelle-la sans faux sous-composants.
+            Quand l'objectif inclut la prononciation, ajoute un indice sonore français,
+            ou anglais seulement si l'apprenant le connaît, pour retrouver la lecture fournie
+            à partir du sens ou de la scène, pas une simple
+            répétition de la réponse ; signale les approximations, sons ou tons non couverts.
+            La forme d'un caractère ne permet pas de déduire sa lecture par défaut : ne présente
+            pas une association sonore comme une cause linguistique ou une règle de lecture.
+            N'attribue un rôle phonétique à un composant que si ce rôle est fourni comme référence.
+            Respecte la langue et le contexte de lecture. Pour un objectif de prononciation
+            en chinois, la variété parlée et les tons doivent être précisés ; leur absence
+            ne bloque pas un objectif limité au sens ou à la disposition des composants.
+            Si les références nécessaires manquent ou sont ambiguës, indique le manque
+            et n'invente ni lecture ni ton ; ne choisis pas le mandarin par défaut.
             Présente toute association inventée comme une image ou une fiction mnémotechnique,
             jamais comme une étymologie réelle. N'ajoute aucun fait non établi, aucune fausse
             étymologie ni explication factuelle inventée. En cas de doute, utilise une association

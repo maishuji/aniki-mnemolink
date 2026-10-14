@@ -3,6 +3,7 @@ package dev.mnemolink.app
 import dev.mnemolink.app.data.demo.DemoMnemonicService
 import dev.mnemolink.app.domain.ApprovedProposal
 import dev.mnemolink.app.domain.EntryMode
+import dev.mnemolink.app.domain.GenerationExamples
 import dev.mnemolink.app.domain.GenerationInput
 import dev.mnemolink.app.domain.GenerationValidation
 import kotlinx.coroutines.test.runTest
@@ -72,6 +73,31 @@ class GenerationDomainTest {
                 input.copy(context = "Different context", entryMode = EntryMode.ReturnToHost)
             )
         )
+    }
+
+    @Test
+    fun editedJapaneseInputDoesNotReceiveThePrewrittenTreeMnemonic() = runTest {
+        val service = DemoMnemonicService()
+        val example = GenerationExamples.japaneseCharacter
+        val editedInputs = listOf(
+            example.copy(context = "A different supplied sense or objective"),
+            example.copy(concept = "水")
+        )
+        for (input in editedInputs) {
+            val draft = service.generate(input)
+            assertTrue(draft.startsWith("Mock mnemonic (imaginary story):"))
+            assertTrue(draft.contains("does not explain or verify"))
+        }
+    }
+
+    @Test
+    fun japaneseDemoIsDeterministicAndIndependentOfEntryMode() = runTest {
+        val service = DemoMnemonicService()
+        val input = GenerationExamples.japaneseCharacter
+        val draft = service.generate(input)
+        assertTrue(draft.startsWith("Démo mnémotechnique (image fictive) :"))
+        assertEquals(draft, service.generate(input))
+        assertEquals(draft, service.generate(input.copy(entryMode = EntryMode.ReturnToHost)))
     }
 
     @Test

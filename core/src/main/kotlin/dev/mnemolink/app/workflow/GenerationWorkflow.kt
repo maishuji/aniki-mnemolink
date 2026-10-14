@@ -1,6 +1,7 @@
 package dev.mnemolink.app.workflow
 
 import dev.mnemolink.app.domain.ApprovedProposal
+import dev.mnemolink.app.domain.GenerationExamples
 import dev.mnemolink.app.domain.GenerationInput
 import dev.mnemolink.app.domain.GenerationStatus
 import dev.mnemolink.app.domain.GenerationUiState
@@ -25,10 +26,7 @@ import kotlinx.coroutines.launch
 class GenerationWorkflow(
     private val service: MnemonicService,
     scope: CoroutineScope,
-    initialInput: GenerationInput = GenerationInput(
-        concept = "ubiquitous",
-        context = "Synthetic demo example\nFront: ubiquitous\nBack: present everywhere"
-    )
+    initialInput: GenerationInput = GenerationExamples.japaneseCharacter
 ) : AutoCloseable {
     private val workflowJob = SupervisorJob(scope.coroutineContext[Job])
     private val workflowScope = CoroutineScope(scope.coroutineContext + workflowJob)
