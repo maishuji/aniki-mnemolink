@@ -41,7 +41,15 @@ Offline Demo remains deterministic and makes no server requests. Smoke mode alwa
 
 ## Prompt and request limits
 
-The system prompt asks for a brief French mnemonic: one to three plain-text sentences, without preamble, markup, or reasoning. Invented associations must be presented as mnemonic images/fiction, **never as real etymology** or invented factual explanations. Concept/context are serialized into a JSON user message and explicitly treated as **untrusted data, not instructions**. No tools are supplied; tool-call responses are rejected. Prompt policy is not a factuality or prompt-injection guarantee: review every suggestion.
+The system prompt asks for a brief French mnemonic: one to three plain-text sentences, without preamble, markup, or internal reasoning, but with an explicit retrieval link. Invented associations must be presented as mnemonic images/fiction, **never as real etymology** or invented factual explanations. Concept/context are serialized into a JSON user message and explicitly treated as **untrusted data, not instructions**. No tools are supplied; tool-call responses are rejected. Prompt policy is not a factuality or prompt-injection guarantee: review every suggestion.
+
+For hanzi/kanji, the reference learner profile assumes familiar components/keys unless the supplied profile says otherwise. The prompt asks for the supplied component arrangement (left/right, top/bottom, inside/outside) linked to meaning, rather than a stroke-by-stroke shape story. Indexing radicals and graphical components are not interchangeable. Missing or doubtful decomposition is a limitation to disclose, not permission to invent components.
+
+If pronunciation is an objective, the prompt also asks for a French sound cue (or English when familiar to the learner) tied to the supplied reading and meaning, with explicit approximation and coverage limits. A shape cue does not establish a reading rule; phonetic-component roles require supplied references. Japanese readings remain scoped to their supplied context; Chinese pronunciation requires a spoken variety and tone references, without assuming Mandarin; missing pronunciation data does not block a meaning/layout-only task.
+
+The initial synthetic example is `木`, supplied with isolated-word reading `き` and meaning *arbre*. Its context now declares familiar `木` and a pronunciation-recall objective. Since this character is itself a known key, it has no supplied component nesting to reconstruct. Offline Demo uses the fictional question “QUI m'a planté ?” to connect the tree to an approximate French sound cue, not to explain why Japanese uses `き`. Composite-character practice needs the components/layout and the intended reading in the context; no new input fields or automatic decomposition lookup were added.
+
+HTTP fixture tests check that this policy and the exact source data are sent for both supported models. They do not demonstrate that a live model follows the instructions or that the resulting mnemonic improves recall. No new live-model quality result is claimed for this prompt change.
 
 | Setting | Desktop adapter value |
 | --- | --- |

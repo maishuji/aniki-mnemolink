@@ -5,10 +5,17 @@ enum class EntryMode {
     ReturnToHost
 }
 
+enum class LearningInputMode {
+    General,
+    JapaneseVocabulary
+}
+
 data class GenerationInput(
     val concept: String,
     val context: String = "",
-    val entryMode: EntryMode = EntryMode.Standalone
+    val entryMode: EntryMode = EntryMode.Standalone,
+    val mode: LearningInputMode = LearningInputMode.General,
+    val japanese: JapaneseWordDetails? = null
 )
 
 /** A local approval only: no note identity, persistence, or host write is implied. */

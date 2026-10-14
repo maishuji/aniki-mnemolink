@@ -200,6 +200,8 @@ class DesktopGenerationControllerTest {
             runCurrent()
 
             assertEquals(GenerationBackend.Qwen3, controller.backend.value)
+            assertEquals("木", controller.workflow.state.value.input.concept)
+            assertTrue(controller.workflow.state.value.input.context.contains("Sens : arbre"))
             assertEquals("qwen3:14b", controller.backend.value.model)
             assertEquals(listOf(GenerationBackend.Qwen3), factory.services.map { it.backend })
             assertTrue(factory.services.single().requests.isEmpty())

@@ -32,6 +32,8 @@ class GenerationViewModelTest {
 
         assertEquals(GenerationStatus.Ready, viewModel.state.value.status)
         assertEquals("ubiquitous", viewModel.state.value.input.concept)
+        assertTrue(viewModel.state.value.input.context.contains("Front: ubiquitous"))
+        assertTrue(viewModel.state.value.input.context.contains("Back: present everywhere"))
         assertTrue(viewModel.state.value.input.context.contains("Synthetic demo"))
         assertEquals(EntryMode.Standalone, viewModel.state.value.input.entryMode)
         assertTrue(viewModel.state.value.canGenerate)
