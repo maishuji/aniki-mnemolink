@@ -2,8 +2,19 @@ package dev.mnemolink.app.domain
 
 /** Synthetic standalone examples, never loaded from a user's Anki collection. */
 object GenerationExamples {
+    val generic = GenerationInput(
+        concept = "ubiquitous",
+        context = "Synthetic demo example\nFront: ubiquitous\nBack: present everywhere"
+    )
+
     val japaneseCharacter = GenerationInput(
         concept = "木",
+        mode = LearningInputMode.JapaneseVocabulary,
+        japanese = JapaneseWordDetails(
+            kana = "き",
+            meaning = "arbre",
+            meaningLanguage = MeaningLanguage.French
+        ),
         context = """
             Synthetic demo example (no Anki note)
             Langue : japonais

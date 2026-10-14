@@ -32,16 +32,12 @@ class GenerationWorkflowTest {
         TestScope(StandardTestDispatcher()).runTest { block() }
 
     @Test
-    fun initialStateUsesKnownJapaneseComponentAndSuppliedReadingObjectives() = workflowTest {
+    fun initialStateUsesGenericSyntheticExample() = workflowTest {
         GenerationWorkflow(MnemonicService { "Unused" }, this).use { workflow ->
             val state = workflow.state.value
-            assertEquals("木", state.input.concept)
-            assertTrue(state.input.context.contains("Lecture fournie : き"))
-            assertTrue(state.input.context.contains("Sens : arbre"))
-            assertTrue(state.input.context.contains("reconnaître le sens"))
-            assertTrue(state.input.context.contains("Composant déjà connu : 木 = arbre"))
-            assertTrue(state.input.context.contains("retrouver la lecture fournie き"))
-            assertTrue(state.input.context.contains("français"))
+            assertEquals("ubiquitous", state.input.concept)
+            assertTrue(state.input.context.contains("Front: ubiquitous"))
+            assertTrue(state.input.context.contains("Back: present everywhere"))
             assertEquals(EntryMode.Standalone, state.input.entryMode)
             assertEquals(GenerationStatus.Ready, state.status)
             assertEquals("", state.draft)
@@ -78,7 +74,7 @@ class GenerationWorkflowTest {
         GenerationWorkflow(
             MnemonicService { input ->
                 calls++
-                assertEquals("木", input.concept)
+                assertEquals("ubiquitous", input.concept)
                 "An imaginary story"
             },
             this

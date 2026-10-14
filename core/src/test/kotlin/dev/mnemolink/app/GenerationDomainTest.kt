@@ -101,6 +101,54 @@ class GenerationDomainTest {
     }
 
     @Test
+    fun japaneseModeRequiresSuppliedKanaAndMeaning() {
+        val missingDetails = GenerationInput("魚", mode = LearningInputMode.JapaneseVocabulary)
+        assertEquals(
+            "Enter the Japanese reading and meaning.",
+            GenerationValidation.inputError(missingDetails)
+        )
+        val missingMeaning = GenerationInput(
+            "魚",
+            mode = LearningInputMode.JapaneseVocabulary,
+            japanese = JapaneseWordDetails("さかな", "", MeaningLanguage.French)
+        )
+        assertEquals("Enter the intended meaning.", GenerationValidation.inputError(missingMeaning))
+        assertNull(GenerationValidation.inputError(GenerationExamples.japaneseCharacter))
+    }
+
+    @Test
+    fun japaneseDetailsCannotBeHiddenInGeneralMode() {
+        val input = GenerationInput(
+            "魚",
+            mode = LearningInputMode.General,
+            japanese = JapaneseWordDetails("さかな", "poisson", MeaningLanguage.French)
+        )
+        assertEquals(
+            "Japanese vocabulary details require Japanese vocabulary mode.",
+            GenerationValidation.inputError(input)
+        )
+    }
+
+    @Test
+    fun japaneseFieldsRejectUnsafeMarkupAndRespectLimits() {
+        val base = GenerationExamples.japaneseCharacter
+        assertNotNull(
+            GenerationValidation.inputError(
+                base.copy(japanese = base.japanese!!.copy(kana = "<b>き</b>"))
+            )
+        )
+        assertNotNull(
+            GenerationValidation.inputError(
+                base.copy(
+                    japanese = base.japanese!!.copy(
+                        meaning = "a".repeat(GenerationValidation.MAX_JAPANESE_MEANING_LENGTH + 1)
+                    )
+                )
+            )
+        )
+    }
+
+    @Test
     fun demoRejectsInvalidInput() = runTest {
         val service = DemoMnemonicService()
         var rejected = false

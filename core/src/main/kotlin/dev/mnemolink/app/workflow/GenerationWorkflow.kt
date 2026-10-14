@@ -26,7 +26,7 @@ import kotlinx.coroutines.launch
 class GenerationWorkflow(
     private val service: MnemonicService,
     scope: CoroutineScope,
-    initialInput: GenerationInput = GenerationExamples.japaneseCharacter
+    initialInput: GenerationInput = GenerationExamples.generic
 ) : AutoCloseable {
     private val workflowJob = SupervisorJob(scope.coroutineContext[Job])
     private val workflowScope = CoroutineScope(scope.coroutineContext + workflowJob)
